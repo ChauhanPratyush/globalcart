@@ -47,6 +47,9 @@ jobs:
     name: Build and publish Docker image
     needs: ci-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/shared-docker.yaml
     with:
       image_name: ${{ github.repository_owner }}/globalcart
