@@ -1,0 +1,70 @@
+name: Build NodeJs Application
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  ci-test:
+    name: Lint and unit test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        node:
+          - 18.x
+          - 20.x
+
+    defaults:
+      run:
+        working-directory: globalcart
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: globalcart/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+  docker-publish:
+    name: Build and publish Docker image
+    needs: ci-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/shared-docker.yml
+    with:
+      image_name: ${{ github.repository_owner }}/globalcart
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: docker-publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: Production
+    steps:
+      - name: Mock production deployment
+        env:
+          IMAGE_URI: ${{ needs.docker-publish.outputs.image_uri }}
+          PROD_DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          echo "Deploying image: ${IMAGE_URI}"
+          echo "Production deployment approved and started."
