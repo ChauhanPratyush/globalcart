@@ -21,7 +21,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: globalcart
+        working-directory: .
 
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-          cache-dependency-path: globalcart/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install deps
         run: npm ci
