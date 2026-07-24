@@ -30,9 +30,11 @@ jobs:
         run: |
           SHORT_SHA="${GITHUB_SHA::7}"
           IMAGE_TAG="${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
-          IMAGE_URI="ghcr.io/${{ inputs.image_name }}:${IMAGE_TAG}"
+          IMAGE_NAME_LOWER=$(echo "${{ inputs.image_name }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_URI="ghcr.io/${IMAGE_NAME_LOWER}:${IMAGE_TAG}"
           echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
           echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+          echo "image_name_lower=${IMAGE_NAME_LOWER}" >> "$GITHUB_OUTPUT"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -49,4 +51,4 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.image_uri }}
-            ghcr.io/${{ inputs.image_name }}:latest
+            ghcr.io/${{ steps.meta.outputs.image_name_lower }}:latest
