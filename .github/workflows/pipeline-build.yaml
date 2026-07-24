@@ -47,7 +47,7 @@ jobs:
     name: Build and publish Docker image
     needs: ci-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/shared-docker.yml
+    uses: ./.github/workflows/shared-docker.yaml
     with:
       image_name: ${{ github.repository_owner }}/globalcart
     secrets:
